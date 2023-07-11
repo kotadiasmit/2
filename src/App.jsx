@@ -29,7 +29,9 @@ const App = () => {
   };
 
   const onUpdateEvent = (event) => {
-    setAddAndUpdateEvent(eventsData[event.id]);
+    console.log(event.id)
+    const index = eventsData.findIndex(eventDetails => eventDetails.id === event.id)
+    setAddAndUpdateEvent(eventsData[index]);
     setIsUpdateEvent(true);
   };
 

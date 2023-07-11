@@ -13,9 +13,10 @@ const UpdateModel = ({ addAndUpdateEvent, closeModel, isAddEvent }) => {
   const [startTime, setStartTime] = useState(start.toLocaleTimeString());
   const [endTime, setEndTime] = useState(end.toLocaleTimeString());
   const [errorMsg, setErrorMsg] = useState("");
-  // console.log(start);
-  // console.log(endTime);
-  // console.log(addAndUpdateEvent);
+  console.log(start);
+  console.log(end)
+  console.log(endTime);
+  console.log(addAndUpdateEvent);
 
   const dispatch = useDispatch();
   const modalClose = () => {
@@ -23,13 +24,9 @@ const UpdateModel = ({ addAndUpdateEvent, closeModel, isAddEvent }) => {
     setShow(false);
   };
 
-  const showErrorMsg = (trimmedEventTitle, trimmedDescription) => {
-    if (trimmedEventTitle === "" && trimmedDescription !== "") {
+  const showErrorMsg = (trimmedEventTitle) => {
+    if (trimmedEventTitle === "") {
       setErrorMsg("please enter valid title");
-    } else if (trimmedEventTitle !== "" && trimmedDescription === "") {
-      setErrorMsg("please enter valid description");
-    } else if (trimmedEventTitle === "" && trimmedDescription === "") {
-      setErrorMsg("please enter valid title & description");
     }
   };
 
@@ -45,21 +42,10 @@ const UpdateModel = ({ addAndUpdateEvent, closeModel, isAddEvent }) => {
   };
   const onStartTimeChange = (event) => {
     const { value } = event.target;
-    if (endTime < value && endTime.slice(3, 5) !== "00") {
-      alert("select valid time");
-      return;
-    }
-
     setStartTime(value);
   };
   const onEndTimeChange = (event) => {
     const { value } = event.target;
-    if (startTime > value && value.slice(3, 5) !== "00") {
-      if (startTime.slice(3, 5) >= value.slice(3, 5)) {
-        alert("select valid time");
-        return;
-      }
-    }
     setEndTime(value);
   };
 
@@ -69,14 +55,34 @@ const UpdateModel = ({ addAndUpdateEvent, closeModel, isAddEvent }) => {
     const trimmedDescription = description.trim();
 
     const endYear = end.getFullYear();
-    const endMonth = end.getMonth();
+    let endMonth = end.getMonth();
     let endDate = end.getDate();
-    if (end.toLocaleTimeString() === "00:00:00") {
-      endDate = endDate - 1;
+    console.log(typeof endDate)
+    let daysInMonth = moment(start).daysInMonth()
+    console.log(daysInMonth)
+    console.log(start.getTime() - end.getTime())
+    if (end.getTime() - start.getTime() === 86400000)
+    // (end.toLocaleTimeString() === "00:00:00" || end.toLocaleTimeString() === "12:00:00 AM") && start.getDate() !== endDate) 
+    {
+      // if (endDate === 31 && (endMonth % 2 === 1 || endMonth === 8 || endMonth === 10 || endMonth === 12)) {
+      //   console.log(31)
+      //   endDate = start.getDate();
+      // }
+      // else if (endDate === 30 && (endMonth % 2 === 0 || endMonth === 9 || endMonth === 11)) {
+      //   console.log(30)
+      //   endDate = start.getDate()
+      // }
+      if (daysInMonth === start.getDate()) {
+        endDate = start.getDate()
+        endMonth = endMonth - 1
+      }
+      else {
+        endDate = endDate - 1
+      }
     }
     console.log(endYear, endMonth, endDate);
 
-    if (trimmedEventTitle && trimmedDescription) {
+    if (trimmedEventTitle) {
       let AddOrUpdateEventDetails = {
         id: id,
         title: trimmedEventTitle,
@@ -84,13 +90,19 @@ const UpdateModel = ({ addAndUpdateEvent, closeModel, isAddEvent }) => {
         start: new Date(`${moment(start).format("ll")} ${startTime}`),
         end: new Date(`${endYear}/${endMonth + 1}/${endDate} ${endTime}`),
       };
+      console.log(AddOrUpdateEventDetails.start)
+      console.log(AddOrUpdateEventDetails.end)
+      if (AddOrUpdateEventDetails.start.getTime() >= AddOrUpdateEventDetails.end.getTime()) {
+        alert("Please set valid End Time")
+        return
+      }
       isAddEvent
         ? dispatch(addMyEvent(AddOrUpdateEventDetails))
         : dispatch(updateMyEvent(AddOrUpdateEventDetails));
       setShow(false);
       closeModel();
     } else {
-      showErrorMsg(trimmedEventTitle, trimmedDescription);
+      showErrorMsg(trimmedEventTitle);
     }
   };
 
@@ -116,7 +128,7 @@ const UpdateModel = ({ addAndUpdateEvent, closeModel, isAddEvent }) => {
               className="input"
               type="text"
               id="eventTitle"
-              placeholder="your name"
+              placeholder="Event Title"
               maxLength="40"
               value={eventTitle}
               onChange={titleInputChanged}
@@ -130,7 +142,7 @@ const UpdateModel = ({ addAndUpdateEvent, closeModel, isAddEvent }) => {
               // eslint-disable-next-line react/no-unknown-property
               row="5"
               maxLength="200"
-              placeholder="your Description"
+              placeholder="Description"
               value={description}
               onChange={descriptionChanged}
               id="textarea"

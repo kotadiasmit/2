@@ -62,7 +62,9 @@ const eventReducer = createSlice({
       state.eventList.splice(id, 1, action.payload);
     },
     deleteMyEvent(state, action) {
-      state.eventList.splice(action.payload, 1);
+      const eventId = action.payload
+      const index = state.eventList.findIndex(eventDetails => eventDetails.id === eventId)
+      state.eventList.splice(index, 1);
     },
   },
 });
